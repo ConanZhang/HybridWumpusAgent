@@ -1,0 +1,14 @@
+function sentence = CS4300_tell(KB, sentence)
+% CS4300_tell - Takes an agent percept and converts it
+% into a sentence
+% On input:
+%     KB, a knowledgebase, initially the atemporal “wumpus physics”
+% On output:
+
+% Call:
+%     [s,t] = CS4300_make_percept_sentence(50,'CS4300_hybrid_agent');
+% Author:
+%     Rajul Ramchandani & Conan Zhang
+%     UU
+%     Fall 2016
+%
