@@ -31,22 +31,22 @@ persistent safe ;
 persistent visited;
 persistent unvisited;
 persistent current;
-
+havegold = 0;
 
 if isempty(KB)
     KB = CS4300_generate_default_KB();
 end
 
 if isempty(safe)
-    safe = ones(4,4);
+    safe = ones(4,4); %current spots and unvisited safe spots
 end
 
 if isempty(visited)
-    visited = zeros(4,4);
+    visited = zeros(4,4); %all spots you have visited yourself
 end
 
 if isempty(unvisited)
-    unvisited = zeros(4,4);
+    unvisited = zeros(4,4); %all unvisited explored spots will be 1, real unvisited spots you know nothing about will be 0
 end
 
 if isempty(t)
@@ -67,7 +67,10 @@ CS4300_tell(KB, CS4300_make_percept_sentence(current, percept, t));
 
 visited(current.x, current.y) = 0;
 unvisited(current.x, current.y) = 0;
+safe(current.x, current.y) = 0;
+
 adj = get_adjacent(current.x, current.y); %adj.coord structure
+
 [col,row] = size(adj);
 for i = 1:row
     [adj_x,adj_y] = adj(i).coord;
@@ -78,42 +81,45 @@ for i = 1:row
 end
 
 % Glitter Ask
-if CS4300_ask(KB, pno + 64)
+if haveGold==0 && CS4300_ask(KB, pno + 64)
     plan(end+1) = 4;
     plan(end+1) = CS4300_plan_route_(current, [1,1,0], safe);
     plan(end+1) = 6;
+    haveGold = 1;
 end
 
-% Unvisited Ask
+% unvisited Ask
 if isempty(plan)
-   safe_inv = ~safe;
-   
-   unvisited_safe = intersect(safe_inv, unvisited);   
+      
    %look at adjacent spots and add to unvisited if they havent been visited
    for i = 1:row
        [adj_x,adj_y] = adj(i).coord;
        if visited(adj_x,adj_y) == 1
            unvisited(adj_x, adj_y)= 1;
        end
-       %TODO: write a intersect of matrices 
-       %find intersect and pass to plan_route
+       
+   end
+   %TODO: write a intersect of matrices 
+       %wait for Tom to reply on how to pick destination for A*
        %in plan route - find the point with least manhattan distance and
        %use that for the A* call
-   end
-   plan = CS4300_plan_route(current, safe);
+   safe_inv = ~safe;
+   unvisited_safe = safe_inv + unvisited; 
+   [row,col] = find(unvisited_safe==2);
+   plan = CS4300_plan_route(current, [row(1), col(1)], safe);
 end
 
 % Take Risk
-if isempty(plan)
-   not_unsafe 
-   plan = CS4300_plan_route(current, safe);
-end
+% if isempty(plan)
+%    not_unsafe 
+%    plan = CS4300_plan_route(current, safe);
+% end
 
 % Last is Empty check
-if isempty(plan)
-    plan(end+1) = CS4300_plan_route(current, [1,1,0], safe);
-    plan(end+1) = 6;
-end
+% if isempty(plan)
+%     plan(end+1) = CS4300_plan_route(current, [1,1,0], safe);
+%     plan(end+1) = 6;
+% end
 
 action = plan(1);
 plan = plan(:,2:end);

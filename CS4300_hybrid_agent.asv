@@ -31,22 +31,22 @@ persistent safe ;
 persistent visited;
 persistent unvisited;
 persistent current;
-
+havegold = 0;
 
 if isempty(KB)
     KB = CS4300_generate_default_KB();
 end
 
 if isempty(safe)
-    safe = ones(4,4);
+    safe = ones(4,4); %current spots and unvisited safe spots
 end
 
 if isempty(visited)
-    visited = zeros(4,4);
+    visited = zeros(4,4); %all spots you have visited yourself
 end
 
 if isempty(unvisited)
-    unvisited = zeros(4,4);
+    unvisited = zeros(4,4); %all unvisited explored spots will be 1, real unvisited spots you know nothing about will be 0
 end
 
 if isempty(t)
@@ -67,7 +67,10 @@ CS4300_tell(KB, CS4300_make_percept_sentence(current, percept, t));
 
 visited(current.x, current.y) = 0;
 unvisited(current.x, current.y) = 0;
+safe(current.x, current.y) = 0;
+
 adj = get_adjacent(current.x, current.y); %adj.coord structure
+
 [col,row] = size(adj);
 for i = 1:row
     [adj_x,adj_y] = adj(i).coord;
@@ -78,17 +81,16 @@ for i = 1:row
 end
 
 % Glitter Ask
-if CS4300_ask(KB, pno + 64)
+if haveGold==0 && CS4300_ask(KB, pno + 64)
     plan(end+1) = 4;
     plan(end+1) = CS4300_plan_route_(current, [1,1,0], safe);
     plan(end+1) = 6;
+    haveGold = 1;
 end
 
-% Unvisited Ask
+% unvisited Ask
 if isempty(plan)
-   safe_inv = ~safe;
-   
-   unvisited_safe = intersect(safe_inv, unvisited);   
+      
    %look at adjacent spots and add to unvisited if they havent been visited
    for i = 1:row
        [adj_x,adj_y] = adj(i).coord;
