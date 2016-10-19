@@ -18,9 +18,10 @@ vars = [];
 for i= 1:80
     vars(end+1) = i;
 end
+theorem = [];
+theorem(1).clauses = thm;
 
-
-res = CS4300_RTP(KB, thm, vars);
+res = CS4300_RTP(KB, theorem, vars);
 
 if isempty(res)
     can_resolve = 1;

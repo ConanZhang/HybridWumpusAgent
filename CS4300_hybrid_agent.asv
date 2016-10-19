@@ -73,9 +73,12 @@ adj = get_adjacent(current.x, current.y); %adj.coord structure
 
 [col,row] = size(adj);
 for i = 1:row
-    [adj_x,adj_y] = adj(i).coord;
+    adj_x = adj(i).coord(1);
+    adj_y = adj(i).coord(2);
     adj_pno = pit_numbers(adj_x, adj_y);
-    if CS4300_ask(KB,  -( adj_pno+ 32))==1 && CS4300_ask(KB,  -(adj_pno))==1 %check for no w and p in adjacent spots and add to safe
+    thm = [];
+    thm(1).clauses = 
+    if CS4300_ask(KB,-(adj_pno+ 32))==1 && CS4300_ask(KB,  -(adj_pno))==1 %check for no w and p in adjacent spots and add to safe
         safe(adj_x, adj_y) = 0;
     end
 end
@@ -97,25 +100,29 @@ if isempty(plan)
        if visited(adj_x,adj_y) == 1
            unvisited(adj_x, adj_y)= 1;
        end
-       %TODO: write a intersect of matrices 
-       %find intersect and pass to plan_route
+       
+   end
+   %TODO: write a intersect of matrices 
+       %wait for Tom to reply on how to pick destination for A*
        %in plan route - find the point with least manhattan distance and
        %use that for the A* call
-   end
-   plan = CS4300_plan_route(current, safe);
+   safe_inv = ~safe;
+   unvisited_safe = safe_inv + unvisited; 
+   [row,col] = find(unvisited_safe==2);
+   plan = CS4300_plan_route(current, [row(1), col(1)], safe);
 end
 
 % Take Risk
-if isempty(plan)
-   not_unsafe 
-   plan = CS4300_plan_route(current, safe);
-end
+% if isempty(plan)
+%    not_unsafe 
+%    plan = CS4300_plan_route(current, safe);
+% end
 
 % Last is Empty check
-if isempty(plan)
-    plan(end+1) = CS4300_plan_route(current, [1,1,0], safe);
-    plan(end+1) = 6;
-end
+% if isempty(plan)
+%     plan(end+1) = CS4300_plan_route(current, [1,1,0], safe);
+%     plan(end+1) = 6;
+% end
 
 action = plan(1);
 plan = plan(:,2:end);

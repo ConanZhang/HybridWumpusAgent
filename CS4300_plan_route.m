@@ -16,4 +16,4 @@ function action_sequence = CS4300_plan_route(current, goals, board)
 %     Fall 2016
 %
 
-action_sequence = CS4300_Wumpmus_A_star(board, current, goals, 'CS4300_A_star_Man');
+action_sequence = CS4300_Wumpus_A_star(board, current, goals, 'CS4300_A_star_Man');

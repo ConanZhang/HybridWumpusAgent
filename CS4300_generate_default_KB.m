@@ -78,4 +78,4 @@ KB(end+1).clauses = [-1];
 KB(end+1).clauses = [-33];
 
 % Two diagonal stenches
-KB(end+1).clauses = [-33];
+%KB(end+1).clauses = [-33];

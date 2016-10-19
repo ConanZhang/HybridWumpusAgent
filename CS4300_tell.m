@@ -1,4 +1,4 @@
-function tell = CS4300_tell(KB, sentence)
+function KB_updated = CS4300_tell(KB, sentence)
 % CS4300_tell - Notifies knowledge base of new sentence
 % On input:
 %     KB (array of sentences) : a knowledgebase, initially the atemporal “wumpus physics”
@@ -21,5 +21,7 @@ for i = 1:m
 end
 
 if contains == 0
-   KB(end+1).clauses = sentences.clauses; 
+   KB(end+1).clauses = sentence.clauses; 
 end
+
+KB_updated = KB;

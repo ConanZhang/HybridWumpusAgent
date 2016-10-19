@@ -31,7 +31,7 @@ persistent safe ;
 persistent visited;
 persistent unvisited;
 persistent current;
-havegold = 0;
+haveGold = 0;
 
 if isempty(KB)
     KB = CS4300_generate_default_KB();
@@ -63,7 +63,7 @@ end
 pit_numbers= [1,2,3,4;5,6,7,8;9,10,11,12; 13,14,15,16];
 pno = pit_numbers(current.x, current.y);
 
-CS4300_tell(KB, CS4300_make_percept_sentence(current, percept, t));
+KB = CS4300_tell(KB, CS4300_make_percept_sentence(current, percept, t));
 
 visited(current.x, current.y) = 0;
 unvisited(current.x, current.y) = 0;
@@ -73,9 +73,11 @@ adj = get_adjacent(current.x, current.y); %adj.coord structure
 
 [col,row] = size(adj);
 for i = 1:row
-    [adj_x,adj_y] = adj(i).coord;
+    adj_x = adj(i).coord(1);
+    adj_y = adj(i).coord(2);
     adj_pno = pit_numbers(adj_x, adj_y);
-    if CS4300_ask(KB,  -( adj_pno+ 32))==1 && CS4300_ask(KB,  -(adj_pno))==1 %check for no w and p in adjacent spots and add to safe
+        
+    if CS4300_ask(KB,-(adj_pno+ 32))==1 && CS4300_ask(KB,  -(adj_pno))==1 %check for no w and p in adjacent spots and add to safe
         safe(adj_x, adj_y) = 0;
     end
 end
@@ -83,7 +85,7 @@ end
 % Glitter Ask
 if haveGold==0 && CS4300_ask(KB, pno + 64)
     plan(end+1) = 4;
-    plan(end+1) = CS4300_plan_route_(current, [1,1,0], safe);
+    plan(end+1) = CS4300_plan_route(current, [1,1,0], safe);
     plan(end+1) = 6;
     haveGold = 1;
 end
