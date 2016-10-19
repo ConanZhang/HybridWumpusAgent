@@ -27,20 +27,30 @@ function action = CS4300_hybrid_agent(percept)
 persistent KB;
 persistent t;
 persistent plan;
-persistent safe;
+persistent safe ;
+persistent visited;
 persistent unvisited;
 persistent current;
 
+
 if isempty(KB)
     KB = CS4300_generate_default_KB();
+end
+
+if isempty(safe)
+    safe = [];
+end
+
+if isempty(unvisited)
+    unvisited = [];
 end
 
 if isempty(t)
    t = 0; 
 end
 
-if isempty(safe)
-   safe = zeros(4,4);
+if isempty(visited)
+   visited = ones(4,4);
 end
 
 if isempty(current)
@@ -54,6 +64,7 @@ pno = pit_numbers(current.x, current.y);
 
 CS4300_tell(KB, CS4300_make_percept_sentence(current, percept, t));
 safe(current.x, current.y) = 1;
+visited(current.x, current.y) = 0;
 
 % Glitter Ask
 if CS4300_ask(KB, pno + 64)
@@ -82,6 +93,45 @@ end
 
 action = plan(1);
 plan = plan(:,2:end);
+current = move_agent(current, action); %move agent
 
-CS4300_tell(KB, CS4300_make_action_sentence(action, t));
+
 t = t + 1;
+
+end
+
+
+function agent = move_agent(current, action)
+agent = current; 
+if action==2
+    agent.r = mod(agent.dir-1,4);
+    return
+end
+
+if action==3
+    agent.r = mod(agent.dir+1,4);
+    return
+end
+if action ==1
+    if agent.r==0 && agent.x~=4
+        agent.x = agent.x+1;
+        return
+    end
+
+    if agent.r==1 && agent.y~=4
+        agent.y = agent.y+1;
+        return
+    end
+    
+    if agent.r==2 && agent.x~=1
+        agent.x = agent.x-1;
+        return
+    end
+    
+    if agent.r==3 && agent.y~=1
+        agent.y = agent.y-1;
+        return
+    end
+end
+
+end

@@ -13,4 +13,19 @@ function can_resolve = CS4300_ask(KB, thm)
 %     UU
 %     Fall 2016
 %
+vars = [];
 
+for i= 1:80
+    vars(end+1) = i;
+end
+
+
+res = CS4300_RTP(KB, thm, vars);
+
+if isempty(res)
+    can_resolve = 1;
+    return;
+else
+    can_resolve = 0;
+    return;
+end
