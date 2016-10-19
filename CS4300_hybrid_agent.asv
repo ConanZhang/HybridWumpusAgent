@@ -38,20 +38,21 @@ if isempty(KB)
 end
 
 if isempty(safe)
-    safe = [];
+    safe = ones(4,4);
+end
+
+if isempty(visited)
+    visited = zeros(4,4);
 end
 
 if isempty(unvisited)
-    unvisited = [];
+    unvisited = zeros(4,4);
 end
 
 if isempty(t)
    t = 0; 
 end
 
-if isempty(visited)
-   visited = ones(4,4);
-end
 
 if isempty(current)
    current.x = 1;
@@ -63,8 +64,18 @@ pit_numbers= [1,2,3,4;5,6,7,8;9,10,11,12; 13,14,15,16];
 pno = pit_numbers(current.x, current.y);
 
 CS4300_tell(KB, CS4300_make_percept_sentence(current, percept, t));
-safe(current.x, current.y) = 1;
+
 visited(current.x, current.y) = 0;
+unvisited(current.x, current.y) = 0;
+adj = get_adjacent(current.x, current.y); %adj.coord structure
+[col,row] = size(adj);
+for i = 1:row
+    [adj_x,adj_y] = adj(i).coord;
+    adj_pno = pit_numbers(adj_x, adj_y);
+    if CS4300_ask(KB,  -( adj_pno+ 32))==1 && CS4300_ask(KB,  -(adj_pno))==1 %check for no w and p in adjacent spots and add to safe
+        safe(adj_x, adj_y) = 0;
+    end
+end
 
 % Glitter Ask
 if CS4300_ask(KB, pno + 64)
@@ -75,7 +86,20 @@ end
 
 % Unvisited Ask
 if isempty(plan)
-   unvisited 
+   safe_inv = ~safe;
+   
+   unvisited_safe = intersect(safe_inv, unvisited);   
+   %look at adjacent spots and add to unvisited if they havent been visited
+   for i = 1:row
+       [adj_x,adj_y] = adj(i).coord;
+       if visited(adj_x,adj_y) == 1
+           unvisited(adj_x, adj_y)= 1;
+       end
+       %TODO: write a intersect of matrices 
+       %find intersect and pass to plan_route
+       %in plan route - find the point with least manhattan distance and
+       %use that for the A* call
+   end
    plan = CS4300_plan_route(current, safe);
 end
 
@@ -99,6 +123,30 @@ current = move_agent(current, action); %move agent
 t = t + 1;
 
 end
+
+
+
+function adj = get_adjacent(x,y)
+    adj = [];
+    if x-1>0 %add left element
+        adj(end+1).coord = [x-1,y];
+    end
+    if x+1<5 %add right element
+        adj(end+1).coord = [x+1,y];
+    end
+
+    if y-1>0
+        adj(end+1).coord = [x,y-1];
+    end
+
+     if y+1<5
+        adj(end+1).coord = [x,y+1];
+    end
+
+
+end
+
+
 
 
 function agent = move_agent(current, action)
