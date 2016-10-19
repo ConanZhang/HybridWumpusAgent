@@ -15,6 +15,7 @@ pit_numbers= [1,2,3,4;5,6,7,8;9,10,11,12; 13,14,15,16];
 
 k = [];
 
+% Pits 1-16 and Breezes 17-32
 for i = 1:3
     for j = 1:3
         pno = pit_numbers(i,j);
@@ -43,7 +44,7 @@ for i = 1:3
     end        
 end
 
-
+% Wumpuses 33-48 and Stenches 49-64
 for i = 1:3
     for j = 1:3
         wno = 32+pit_numbers(i,j);
@@ -72,5 +73,9 @@ for i = 1:3
     end        
 end
 
+% No wumpus or pit in starting position
 KB(end+1).clauses = [-1];
+KB(end+1).clauses = [-33];
+
+% Two diagonal stenches
 KB(end+1).clauses = [-33];

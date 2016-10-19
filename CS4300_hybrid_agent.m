@@ -17,9 +17,49 @@ function action = CS4300_hybrid_agent(percept)
 %       SHOOT = 5;
 %       CLIMB = 6;
 % Call:
-%     CS4300_hybrid_agent(50,'CS4300_hybrid_agent');
+%     CS4300_hybrid_agent(50);
 % Author:
 %     Rajul Ramchandani & Conan Zhang
 %     UU
 %     Fall 2016
 %
+
+persistent KB;
+persistent t;
+persistent plan;
+persistent safe;
+persistent unvisited;
+
+persistent current;
+
+if isempty(KB)
+    KB = CS4300_generate_default_KB();
+end
+
+if isempty(t)
+   t = 0; 
+end
+
+if isempty(current)
+   current = [1,1]; 
+end
+
+
+CS4300_tell(KB, CS4300_make_percept_sentence(percept, t));
+%if CS4300_ask(KB, )
+if CS4300_ask(KB, )
+    plan(end+1) = 4;
+    plan(end+1) = 6;
+end
+
+% Last is Empty check
+if isempty(plan)
+    plan(end+1) = CS4300_plan_route(current, [1,1,0], safe);
+    plan(end+1) = 6;
+end
+
+action = plan(1);
+plan = plan(:,2:end);
+
+CS4300_tell(KB, CS4300_make_action_sentence(action, t));
+t = t + 1;
