@@ -41,15 +41,23 @@ if isempty(t)
 end
 
 if isempty(current)
-   current = [1,1]; 
+   current.x = 1;
+   current.y = 1; 
+   current.r = 0; 
 end
 
 
-CS4300_tell(KB, CS4300_make_percept_sentence(percept, t));
+CS4300_tell(KB, CS4300_make_percept_sentence(current, percept, t));
 %if CS4300_ask(KB, )
 if CS4300_ask(KB, )
     plan(end+1) = 4;
     plan(end+1) = 6;
+end
+
+% Take Risk
+if isempty(plan)
+   not_unsafe 
+   plan = CS4300_plan_route(current, safe);
 end
 
 % Last is Empty check

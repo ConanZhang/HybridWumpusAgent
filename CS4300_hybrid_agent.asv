@@ -52,6 +52,20 @@ if CS4300_ask(KB, )
     plan(end+1) = 6;
 end
 
+% Take Risk
 if isempty(plan)
-    plan
+   not_unsafe 
+   plan = CS4300_plan_route(current,
 end
+
+% Last is Empty check
+if isempty(plan)
+    plan(end+1) = CS4300_plan_route(current, [1,1,0], safe);
+    plan(end+1) = 6;
+end
+
+action = plan(1);
+plan = plan(:,2:end);
+
+CS4300_tell(KB, CS4300_make_action_sentence(action, t));
+t = t + 1;
