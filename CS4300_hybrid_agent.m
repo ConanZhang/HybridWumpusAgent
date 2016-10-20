@@ -27,11 +27,12 @@ function action = CS4300_hybrid_agent(percept)
 persistent KB;
 persistent t;
 persistent plan;
-persistent safe ;
+persistent safe;
+persistent not_unsafe;
 persistent visited;
 persistent unvisited;
 persistent current;
-haveGold = 0;
+persistent haveGold;
 
 if isempty(KB)
     KB = CS4300_generate_default_KB();
@@ -39,6 +40,10 @@ end
 
 if isempty(safe)
     safe = ones(4,4); %current spots and unvisited safe spots
+end
+
+if isempty(not_unsafe)
+    not_unsafe = zeros(4,4); % Spots that can be proven to be safe or unsafe
 end
 
 if isempty(visited)
@@ -53,6 +58,9 @@ if isempty(t)
    t = 0; 
 end
 
+if isempty(haveGold)
+   haveGold = 0; 
+end
 
 if isempty(current)
    current.x = 1;
@@ -65,7 +73,7 @@ pno = pit_numbers(current.x, current.y);
 
 KB = CS4300_tell(KB, CS4300_make_percept_sentence(current, percept, t));
 
-visited(current.x, current.y) = 0;
+visited(current.x, current.y) = 1;
 unvisited(current.x, current.y) = 0;
 safe(current.x, current.y) = 0;
 
@@ -85,37 +93,72 @@ end
 % Glitter Ask
 if haveGold==0 && CS4300_ask(KB, pno + 64)
     plan(end+1) = 4;
-    plan(end+1) = CS4300_plan_route(current, [1,1,0], safe);
+    % Does third parameter of [1,1,0] need to be 1?
+    solution = CS4300_plan_route(current, [1,1,0], safe);
+    % Add solution into plan
+    [n, m] = size(solution);
+    for i = 1:m
+       plan(end+1) = solution(i); 
+    end
     plan(end+1) = 6;
     haveGold = 1;
 end
 
 % unvisited Ask
 if isempty(plan)
-      
    %look at adjacent spots and add to unvisited if they havent been visited
    for i = 1:row
-       [adj_x,adj_y] = adj(i).coord;
-       if visited(adj_x,adj_y) == 1
+       adj_x = adj(i).coord(1);
+       adj_y = adj(i).coord(2);
+       if visited(adj_x,adj_y) == 0
            unvisited(adj_x, adj_y)= 1;
        end
-       
    end
-   %TODO: write a intersect of matrices 
-       %wait for Tom to reply on how to pick destination for A*
-       %in plan route - find the point with least manhattan distance and
-       %use that for the A* call
+   %TODO: wait for Tom to reply on how to pick destination for A*
+   % in plan route - find the point with least manhattan distance and
+   % use that for the A* call
+   
+   % Intersect safe and unvisited
    safe_inv = ~safe;
    unvisited_safe = safe_inv + unvisited; 
    [row,col] = find(unvisited_safe==2);
-   plan = CS4300_plan_route(current, [row(1), col(1)], safe);
+   
+   if ~isempty(row) && ~isempty(col)
+       % Add solution into plan
+       solution = CS4300_plan_route(current, [row(1), col(1), 0], safe);
+       [n, m] = size(solution);
+       for i = 1:m
+          plan(end+1) = solution(i); 
+       end
+   end
 end
 
 % Take Risk
-% if isempty(plan)
-%    not_unsafe 
-%    plan = CS4300_plan_route(current, safe);
-% end
+if isempty(plan)
+   % Calculate not_unsafe spaces
+   [col,row] = size(adj);
+    for i = 1:row
+        adj_x = adj(i).coord(1);
+        adj_y = adj(i).coord(2);
+        adj_pno = pit_numbers(adj_x, adj_y);
+
+        if CS4300_ask(KB,[(adj_pno+ 32), adj_pno]) == 0 %check for w or p in adjacent spots and add to not_unsafe if there are none
+            not_unsafe(adj_x, adj_y) = 1;
+        end
+    end
+    
+    unvisited_not_unsafe = not_unsafe + unvisited; 
+    [row,col] = find(unvisited_not_unsafe == 2); 
+   
+    if ~isempty(row) && ~isempty(col)
+        % Add solution into plan
+        solution = CS4300_plan_route(current, [row(1), col(1), 0], safe);
+        [n, m] = size(solution);
+        for i = 1:m
+          plan(end+1) = solution(i); 
+        end
+    end
+end
 
 % Last is Empty check
 % if isempty(plan)
@@ -123,16 +166,14 @@ end
 %     plan(end+1) = 6;
 % end
 
+% Pop action and do it
 action = plan(1);
 plan = plan(:,2:end);
 current = move_agent(current, action); %move agent
 
-
 t = t + 1;
 
 end
-
-
 
 function adj = get_adjacent(x,y)
     adj = [];
@@ -149,13 +190,8 @@ function adj = get_adjacent(x,y)
 
      if y+1<5
         adj(end+1).coord = [x,y+1];
-    end
-
-
+     end
 end
-
-
-
 
 function agent = move_agent(current, action)
 agent = current; 
