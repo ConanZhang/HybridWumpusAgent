@@ -206,6 +206,9 @@ current = move_agent(current, action); %move agent
 
 t = t + 1;
 
+[a,b] = size(KB);
+t, b
+
 end
 
 function adj = get_adjacent(x,y)

@@ -1,4 +1,4 @@
-function action = CS4300_hybrid_agent(percept)
+function [action, steps,KB_size] = CS4300_hybrid_agent_data(percept)
 % CS4300_make_percept_sentence - Takes an agent percept and converts it
 % into a sentence
 % On input:
@@ -136,21 +136,23 @@ if isempty(plan)
    % Intersect safe and unvisited
 %    safe_inv = ~safe;
     [n,m] = size(safe);
+    safe_copy = safe;
     for i=1:m
         for j=1:n
             if safe(i,j)==1
-                safe(i,j) = 0;
+                safe_copy(i,j) = 0;
             elseif safe(i,j)==0
-                safe(i,j) = 1;
+                safe_copy(i,j) = 1;
             end
         end
     end
-   unvisited_safe = safe_inv + unvisited; 
+   unvisited_safe = safe_copy + unvisited; 
    [row,col] = find(unvisited_safe==2);
    
    if ~isempty(row) && ~isempty(col)
        % Add solution into plan
-       solution = CS4300_plan_route(current, [col(1), 5-row(1), 0], safe);
+       abs_safe = abs(safe);
+       solution = CS4300_plan_route(current, [col(1), 5-row(1), 0], abs_safe);
        [n, m] = size(solution);
        for i = 1:m
           plan(end+1) = solution(i); 
@@ -168,6 +170,7 @@ if isempty(plan)
         adj_pno = pit_numbers(5-adj_y, adj_x );
 
         %if CS4300_ask(KB,[(adj_pno+ 32), adj_pno]) == 0%check for w or p in adjacent spots and add to not_unsafe if there are none
+        if safe(5-adj_y, adj_x) == -1
             not_unsafe( 5-adj_y, adj_x) = 1;
         end
     end
@@ -203,6 +206,9 @@ current = move_agent(current, action); %move agent
 
 t = t + 1;
 
+[a,b] = size(KB);
+KB_size = b;
+steps = t;
 end
 
 function adj = get_adjacent(x,y)
