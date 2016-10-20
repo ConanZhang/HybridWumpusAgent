@@ -29,14 +29,20 @@ sentence = [];
 % There's a stench
 if percept(1) == 1
     sentence(end+1).clauses= pno + 48;
+else
+    sentence(end+1).clauses= -(pno + 48);
 end
 
 % There's a breeze
 if percept(2) == 1
     sentence(end+1).clauses = pno + 16;
+else
+    sentence(end+1).clauses= -(pno + 16);
 end
 
 % There's gold
 if percept(3) == 1
     sentence(end+1).clauses = pno + 64;
+else
+    sentence(end+1).clauses= -(pno + 64);
 end
