@@ -69,10 +69,21 @@ if isempty(current)
 end
 
 pit_numbers= [1,2,3,4;5,6,7,8;9,10,11,12; 13,14,15,16];
+pit_numbers = flipud(pit_numbers);
 pno = pit_numbers(current.x, current.y);
+temp = [];
+percept_sentences =[];
+percept_sentences = CS4300_make_percept_sentence(current, percept, t);
+[n,m] = size(percept_sentences);
 
-KB = CS4300_tell(KB, CS4300_make_percept_sentence(current, percept, t));
+for i= 1:m
+    KB = CS4300_tell(KB, percept_sentences(i).clauses);
+end
 
+temp(1).clauses = -(pno);
+KB = CS4300_tell(KB, -(pno)); %no pit
+temp(1).clauses = -(pno + 32);
+KB = CS4300_tell(KB, -(pno + 32)); %no wumpus
 visited(current.x, current.y) = 1;
 unvisited(current.x, current.y) = 0;
 safe(current.x, current.y) = 0;
@@ -167,7 +178,13 @@ end
 % end
 
 % Pop action and do it
+
+if isempty(plan)
+    t = 0;
+end
 action = plan(1);
+
+
 plan = plan(:,2:end);
 current = move_agent(current, action); %move agent
 
@@ -196,12 +213,12 @@ end
 function agent = move_agent(current, action)
 agent = current; 
 if action==2
-    agent.r = mod(agent.dir-1,4);
+    agent.r = mod(agent.r-1,4);
     return
 end
 
 if action==3
-    agent.r = mod(agent.dir+1,4);
+    agent.r = mod(agent.r+1,4);
     return
 end
 if action ==1

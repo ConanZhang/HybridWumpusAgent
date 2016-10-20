@@ -13,15 +13,17 @@ function KB_updated = CS4300_tell(KB, sentence)
 %     Fall 2016
 %
 [n,m] = size(KB);
-contains = 0;
-for i = 1:m
-    if isequal(KB(i).clauses, sentence.clauses)
-       contains = 1; 
-    end
-end
+[x,z] = size(sentence);
 
-if contains == 0
-   KB(end+1).clauses = sentence.clauses; 
-end
+    contains = 0;
+    for i = 1:m
+        if isequal(KB(i).clauses, sentence)
+           contains = 1; 
+        end
+    end
+    if contains == 0
+        KB(end+1).clauses = sentence; 
+    end
+
 
 KB_updated = KB;
