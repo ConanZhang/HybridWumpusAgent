@@ -16,8 +16,8 @@ function action_sequence = CS4300_plan_route(current, goals, board)
 %     Fall 2016
 %
 action_sequence = [];
-board(goals(2), goals(1)) = 0;
-board = flipud(board);
+board(goals(2), 5-goals(1)) = 0;
+
 
 [solution, nodes] = CS4300_Wumpus_A_star(board, [current.x, current.y, current.r], goals, 'CS4300_A_star_Man');
 

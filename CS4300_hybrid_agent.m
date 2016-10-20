@@ -40,6 +40,7 @@ end
 
 if isempty(safe)
     safe = ones(4,4); %current spots and unvisited safe spots
+    safe = -1*safe;
 end
 
 if isempty(not_unsafe)
@@ -99,6 +100,9 @@ for i = 1:row
     if CS4300_ask(KB,-(adj_pno+ 32))==1 && CS4300_ask(KB,  -(adj_pno))==1 %check for no w and p in adjacent spots and add to safe
         safe(5-adj_y,adj_x) = 0;
     end
+     if CS4300_ask(KB,(adj_pno+ 32))==1 || CS4300_ask(KB, (adj_pno))==1 %check for w and p in adjacent spots and add to safe
+        safe(5-adj_y,adj_x) = 1;
+    end
 end
 
 % Glitter Ask
@@ -130,13 +134,25 @@ if isempty(plan)
    % use that for the A* call
    
    % Intersect safe and unvisited
-   safe_inv = ~safe;
-   unvisited_safe = safe_inv + unvisited; 
+%    safe_inv = ~safe;
+    [n,m] = size(safe);
+    safe_copy = safe;
+    for i=1:m
+        for j=1:n
+            if safe(i,j)==1
+                safe_copy(i,j) = 0;
+            elseif safe(i,j)==0
+                safe_copy(i,j) = 1;
+            end
+        end
+    end
+   unvisited_safe = safe_copy + unvisited; 
    [row,col] = find(unvisited_safe==2);
    
    if ~isempty(row) && ~isempty(col)
        % Add solution into plan
-       solution = CS4300_plan_route(current, [col(1), 5-row(1), 0], safe);
+       abs_safe = abs(safe);
+       solution = CS4300_plan_route(current, [col(1), 5-row(1), 0], abs_safe);
        [n, m] = size(solution);
        for i = 1:m
           plan(end+1) = solution(i); 
@@ -153,7 +169,8 @@ if isempty(plan)
         adj_y = adj(i).coord(2);
         adj_pno = pit_numbers(5-adj_y, adj_x );
 
-        if CS4300_ask(KB,[(adj_pno+ 32), adj_pno]) == 0 %check for w or p in adjacent spots and add to not_unsafe if there are none
+        %if CS4300_ask(KB,[(adj_pno+ 32), adj_pno]) == 0%check for w or p in adjacent spots and add to not_unsafe if there are none
+        if safe(5-adj_y, adj_x) == -1
             not_unsafe( 5-adj_y, adj_x) = 1;
         end
     end
@@ -163,6 +180,7 @@ if isempty(plan)
    
     if ~isempty(row) && ~isempty(col)
         % Add solution into plan
+        
         solution = CS4300_plan_route(current, [col(1),5-row(1), 0], safe);
         [n, m] = size(solution);
         for i = 1:m
