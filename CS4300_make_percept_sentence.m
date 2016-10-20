@@ -23,8 +23,8 @@ function sentence = CS4300_make_percept_sentence(current, percept, t)
 %
 
 pit_numbers= [1,2,3,4;5,6,7,8;9,10,11,12; 13,14,15,16];
-
-pno = pit_numbers(current.y, current.x);
+pit_numbers = flipud(pit_numbers);
+pno = pit_numbers( 5-current.y, current.x);
 sentence = [];
 
 % There's a stench

@@ -69,13 +69,24 @@ if isempty(current)
 end
 
 pit_numbers= [1,2,3,4;5,6,7,8;9,10,11,12; 13,14,15,16];
-pno = pit_numbers(current.x, current.y);
+pit_numbers = flipud(pit_numbers);
+pno = pit_numbers(5-current.y,current.x);
+temp = [];
+percept_sentences =[];
+percept_sentences = CS4300_make_percept_sentence(current, percept, t);
+[n,m] = size(percept_sentences);
 
-KB = CS4300_tell(KB, CS4300_make_percept_sentence(current, percept, t));
+for i= 1:m
+    KB = CS4300_tell(KB, percept_sentences(i).clauses);
+end
 
-visited(current.x, current.y) = 1;
-unvisited(current.x, current.y) = 0;
-safe(current.x, current.y) = 0;
+temp(1).clauses = -(pno);
+KB = CS4300_tell(KB, -(pno)); %no pit
+temp(1).clauses = -(pno + 32);
+KB = CS4300_tell(KB, -(pno + 32)); %no wumpus
+visited( 5-current.y, current.x) = 1;
+unvisited(5-current.y, current.x) = 0;
+safe( 5-current.y,current.x) = 0;
 
 adj = get_adjacent(current.x, current.y); %adj.coord structure
 
@@ -83,10 +94,10 @@ adj = get_adjacent(current.x, current.y); %adj.coord structure
 for i = 1:row
     adj_x = adj(i).coord(1);
     adj_y = adj(i).coord(2);
-    adj_pno = pit_numbers(adj_x, adj_y);
+    adj_pno = pit_numbers( 5-adj_y, adj_x);
         
     if CS4300_ask(KB,-(adj_pno+ 32))==1 && CS4300_ask(KB,  -(adj_pno))==1 %check for no w and p in adjacent spots and add to safe
-        safe(adj_x, adj_y) = 0;
+        safe(5-adj_y,adj_x) = 0;
     end
 end
 
@@ -110,8 +121,8 @@ if isempty(plan)
    for i = 1:row
        adj_x = adj(i).coord(1);
        adj_y = adj(i).coord(2);
-       if visited(adj_x,adj_y) == 0
-           unvisited(adj_x, adj_y)= 1;
+       if visited(5-adj_y, adj_x) == 0
+           unvisited( 5-adj_, adj_x)= 1;
        end
    end
    %TODO: wait for Tom to reply on how to pick destination for A*
@@ -140,10 +151,10 @@ if isempty(plan)
     for i = 1:row
         adj_x = adj(i).coord(1);
         adj_y = adj(i).coord(2);
-        adj_pno = pit_numbers(adj_x, adj_y);
+        adj_pno = pit_numbers(5-adj_y, adj_x );
 
         if CS4300_ask(KB,[(adj_pno+ 32), adj_pno]) == 0 %check for w or p in adjacent spots and add to not_unsafe if there are none
-            not_unsafe(adj_x, adj_y) = 1;
+            not_unsafe(adj_x, 5-adj_y) = 1;
         end
     end
     
@@ -152,8 +163,6 @@ if isempty(plan)
    
     if ~isempty(row) && ~isempty(col)
         % Add solution into plan
-        safe_copy =  safe;
-        safe_copy(row(1), col(1)) = 0;
         solution = CS4300_plan_route(current, [row(1), col(1), 0], safe);
         [n, m] = size(solution);
         for i = 1:m
@@ -169,7 +178,13 @@ end
 % end
 
 % Pop action and do it
+
+if isempty(plan)
+    t = 0;
+end
 action = plan(1);
+
+
 plan = plan(:,2:end);
 current = move_agent(current, action); %move agent
 
@@ -198,12 +213,12 @@ end
 function agent = move_agent(current, action)
 agent = current; 
 if action==2
-    agent.r = mod(agent.dir-1,4);
+    agent.r = mod(agent.r-1,4);
     return
 end
 
 if action==3
-    agent.r = mod(agent.dir+1,4);
+    agent.r = mod(agent.r+1,4);
     return
 end
 if action ==1
